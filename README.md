@@ -1,12 +1,12 @@
 # Around the U.S. Back End  
   
-## Directories  
+## what is it
+
+it is afirs back end project
+writen with express library
+this project using get method to get info from stored json files
   
-`/data` — JSON files to temporarily emulate database integration.  
-  
-`/routes` — routing files.  
-  
-All other directories are optional and may be created by the developer if necessary.   
+ 
   
 ## Running the Project  
   

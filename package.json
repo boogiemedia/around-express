@@ -1,0 +1,31 @@
+{
+  "dependencies": {
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "express": "^4.18.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.23.0",
+    "nodemon": "^2.0.19"
+  },
+  "name": "around-express",
+  "description": "`/data` — JSON files to temporarily emulate database integration.",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "dev": "nodemon app.js",
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "npx eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boogiemedia/around-express.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/boogiemedia/around-express/issues"
+  },
+  "homepage": "https://github.com/boogiemedia/around-express#readme"
+}
