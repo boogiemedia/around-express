@@ -2,9 +2,9 @@
   
 ## what is it
 
-it is afirs back end project
+it is a first back-end project
 writen with express library
-this project using get method to get info from stored json files
+this project uses "get" method to get info from stored json files
   
  
   
