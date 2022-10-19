@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
-const REGEX_URL = require('../constants/regex')
+const REGEX_URL = require('../constants/regex');
+
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -17,12 +18,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     validate: {
-      validator: (v) =>{
-        return REGEX_URL.test(v)
-      },
-      message: `use valid url`
-    }
-  }
-})
+      validator: (v) => REGEX_URL.test(v),
+      message: 'use valid url',
+    },
+  },
+});
 
-module.exports = mongoose.model('user', userSchema)
+module.exports = mongoose.model('user', userSchema);

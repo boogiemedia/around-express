@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const REGEX_URL = require('../constants/regex');
+
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -11,19 +12,18 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     validate: {
-      validator: (v) => {
-        return REGEX_URL.test(v);
-      },
-      message: `use valid url`,
+      validator: (v) => REGEX_URL.test(v),
+      message: 'use valid url',
     },
   },
   owner: {
-    type: mongoose.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
-    ref: 'users',
+    ref: 'user',
+    message: 'wrong id',
   },
   likes: {
-    type: mongoose.Types.ObjectId,
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }],
     default: [],
   },
   createdAt: {

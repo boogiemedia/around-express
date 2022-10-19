@@ -1,19 +1,19 @@
 const router = require('express').Router();
-const User = require('../models/user')
+const User = require('../models/user');
+
 const getUsers = (req, res) => {
   User.find({})
-  .then((users) => res.status(200).send(users))
-  .catch((err) => res.status(500).send(err));
-
+    .then((users) => res.status(200).send(users))
+    .catch((err) => res.status(500).send(err));
 };
 const getProfile = (req, res) => {
   const { id } = req.params;
-  User.findOne({id})
-  .orFail(()=>{
-    const error = new Error('User ID is not exist')
-    error.status= 404
-    throw error
-  })
+  User.findOne({ id })
+    .orFail(() => {
+      const error = new Error('User ID is not exist');
+      error.status = 404;
+      throw error;
+    })
     .then((user) => {
       if (!user) {
         return res
@@ -25,23 +25,56 @@ const getProfile = (req, res) => {
     .catch((err) => res.status(500).send(err));
 };
 const createUsers = (req, res) => {
-  const { name, about, avatar} =req.body
+  const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
-  .then((newUser) => res.status(201).send(newUser))
-  .catch((err) => {
-    if(err.name = 'ValidationError'){
-      res.status(400).send({message: "one ore more fields not correct"})
-    }
-    else(()=>{
-      res.status(500).send({message: "there is issue with server"})
-    })
-  });
-
+    .then((newUser) => res.status(201).send(newUser))
+    .catch((err) => {
+      if ((err.name = 'ValidationError')) {
+        res.status(400).send({ message: 'one ore more fields not correct' });
+      } else
+        () => {
+          res.status(500).send({ message: 'there is issue with server' });
+        };
+    });
+};
+const updateUser = (req, res) => {
+  const { name, about } = req.body;
+  const me = { _id: req.user._id };
+  User.findByIdAndUpdate(
+    me,
+    { name, about },
+    { new: true, runValidators: true }
+  )
+    .then((upd) => res.status(201).send(upd))
+    .catch((err) => {
+      if ((err.name = 'ValidationError')) {
+        res.status(400).send({ message: 'one ore more fields not correct' });
+      } else
+        () => {
+          res.status(500).send({ message: 'there is issue with server' });
+        };
+    });
+};
+const updateUserAvatar = (req, res) => {
+  const { avatar } = req.body;
+  const me = { _id: req.user._id };
+  User.findByIdAndUpdate(me, { avatar }, { new: true, runValidators: true })
+    .then((upd) => res.status(201).send(upd))
+    .catch((err) => {
+      if ((err.name = 'ValidationError')) {
+        res.status(400).send({ message: 'it must be a valid url' });
+      } else
+        () => {
+          res.status(500).send({ message: 'there is issue with server' });
+        };
+    });
 };
 //  ......................end of controller ....................
 
 router.get('/users', getUsers);
 router.get('/users/:_id', getProfile);
-router.post('/users', createUsers)
+router.post('/users', createUsers);
+router.patch('/users/me', updateUser);
+router.patch('/users/me/avatar', updateUserAvatar);
 
 module.exports = router;
