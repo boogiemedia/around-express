@@ -16,12 +16,10 @@ const createNewCard = (req, res) => {
       const message = `${Object.values(err.errors)
         .map((error) => error.message)
         .join(',')}`;
-      if ((err.name = 'ValidationError')) {
+      if (err.name === 'ValidationError') {
         res.status(400).send({ message });
       } else {
-        () => {
-          res.status(500).send({ message: 'there is issue with server' });
-        };
+        res.status(500).send({ message: 'there is issue with server' });
       }
     });
 };

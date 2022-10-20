@@ -29,12 +29,11 @@ const createUsers = (req, res) => {
   User.create({ name, about, avatar })
     .then((newUser) => res.status(201).send(newUser))
     .catch((err) => {
-      if ((err.name = 'ValidationError')) {
+      if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'one ore more fields not correct' });
-      } else
-        () => {
-          res.status(500).send({ message: 'there is issue with server' });
-        };
+      } else {
+        res.status(500).send({ message: 'there is issue with server' });
+      }
     });
 };
 const updateUser = (req, res) => {
@@ -43,16 +42,15 @@ const updateUser = (req, res) => {
   User.findByIdAndUpdate(
     me,
     { name, about },
-    { new: true, runValidators: true }
+    { new: true, runValidators: true },
   )
     .then((upd) => res.status(201).send(upd))
     .catch((err) => {
-      if ((err.name = 'ValidationError')) {
+      if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'one ore more fields not correct' });
-      } else
-        () => {
-          res.status(500).send({ message: 'there is issue with server' });
-        };
+      } else {
+        res.status(500).send({ message: 'there is issue with server' });
+      }
     });
 };
 const updateUserAvatar = (req, res) => {
@@ -61,12 +59,11 @@ const updateUserAvatar = (req, res) => {
   User.findByIdAndUpdate(me, { avatar }, { new: true, runValidators: true })
     .then((upd) => res.status(201).send(upd))
     .catch((err) => {
-      if ((err.name = 'ValidationError')) {
+      if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'it must be a valid url' });
-      } else
-        () => {
-          res.status(500).send({ message: 'there is issue with server' });
-        };
+      } else {
+        res.status(500).send({ message: 'there is issue with server' });
+      }
     });
 };
 //  ......................end of controller ....................
