@@ -4,7 +4,7 @@ const Card = require('../models/card');
 const getCards = (req, res) => {
   Card.find({})
     .then((cards) => res.status(200).send(cards))
-    .catch((err) => res.status(400).send(err));
+    .catch((err) => res.status(500).send(err));
 };
 const createNewCard = (req, res) => {
   const { name, link } = req.body;
@@ -32,8 +32,12 @@ const deleteCard = (req, res) => {
       throw error;
     })
     .then(() => res.status(201).send({ message: `card ${name} was deleted ` }))
-    .catch(() => {
-      res.status(500).send({ message: 'there is issue with server' });
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send('something went wrong');
+      } else {
+        res.status(500).send({ message: 'there is issue with server' });
+      }
     });
 };
 const likeCard = (req, res) => {
@@ -42,11 +46,22 @@ const likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
+    .orFail(() => {
+      const error = new Error('user id not found');
+      error.status = 404;
+      throw error;
+    })
     .then(() => {
       res.status(200).send({ message: 'card liked' });
     })
-    .catch(() => {
-      res.status(400).send({ message: 'you cant like twice' });
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'you cant like twice' });
+      } else if (err.status === 404) {
+        res.status(404).send(err.message);
+      } else {
+        res.status(500).send('server error');
+      }
     });
 };
 const unlikeCard = (req, res) => {
@@ -58,8 +73,14 @@ const unlikeCard = (req, res) => {
     .then(() => {
       res.status(200).send({ message: 'card disliked' });
     })
-    .catch(() => {
-      res.status(400).send({ message: 'you cant dislike twice' });
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: err.message });
+      } else if (err.status === 404) {
+        res.status(404).send(err.message);
+      } else {
+        res.status(500).send('server error');
+      }
     });
 };
 //  ......................end of controller ....................

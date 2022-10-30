@@ -7,22 +7,25 @@ const getUsers = (req, res) => {
     .catch((err) => res.status(500).send(err));
 };
 const getProfile = (req, res) => {
-  const { id } = req.params;
-  User.findOne({ id })
+  const { userId } = req.params;
+  User.findById(userId)
     .orFail(() => {
-      const error = new Error('User ID is not exist');
+      const error = new Error('user id not found');
       error.status = 404;
       throw error;
     })
     .then((user) => {
-      if (!user) {
-        return res
-          .status(404)
-          .send({ message: `User ID: ${req.params.id} not found` });
-      }
-      return res.status(200).send(user);
+      res.status(200).send({ data: user });
     })
-    .catch((err) => res.status(500).send(err));
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send('make sure that id format is correct');
+      } else if (err.status === 404) {
+        res.status(404).send(err.message);
+      } else {
+        res.status(500).send('server error');
+      }
+    });
 };
 const createUsers = (req, res) => {
   const { name, about, avatar } = req.body;
@@ -31,6 +34,8 @@ const createUsers = (req, res) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'one ore more fields not correct' });
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: err.message });
       } else {
         res.status(500).send({ message: 'there is issue with server' });
       }
@@ -48,6 +53,8 @@ const updateUser = (req, res) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'one ore more fields not correct' });
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: err.message });
       } else {
         res.status(500).send({ message: 'there is issue with server' });
       }
@@ -69,7 +76,7 @@ const updateUserAvatar = (req, res) => {
 //  ......................end of controller ....................
 
 router.get('/users', getUsers);
-router.get('/users/:_id', getProfile);
+router.get('/users/:userId', getProfile);
 router.post('/users', createUsers);
 router.patch('/users/me', updateUser);
 router.patch('/users/me/avatar', updateUserAvatar);
