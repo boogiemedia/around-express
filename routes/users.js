@@ -1,43 +1,49 @@
 const router = require('express').Router();
 const User = require('../models/user');
+const {
+  OK,
+  ADD,
+  INVALID_DATA,
+  NOT_FOUND,
+  SERVER_ERROR,
+  SERVER_ERROR_MESSAGE,
+} = require('../constants/statusHandler');
 
 const getUsers = (req, res) => {
   User.find({})
-    .then((users) => res.status(200).send(users))
-    .catch((err) => res.status(500).send(err));
+    .then((users) => res.status(OK).send(users))
+    .catch(() => res.status(SERVER_ERROR).send({ message: SERVER_ERROR_MESSAGE }));
 };
 const getProfile = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
     .orFail(() => {
       const error = new Error('user id not found');
-      error.status = 404;
+      error.status = NOT_FOUND;
       throw error;
     })
     .then((user) => {
-      res.status(200).send({ data: user });
+      res.status(OK).send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send('make sure that id format is correct');
-      } else if (err.status === 404) {
-        res.status(404).send(err.message);
+        res.status(INVALID_DATA).send({ message: 'make sure that id format is correct' });
+      } else if (err.status === NOT_FOUND) {
+        res.status(NOT_FOUND).send({ message: 'there is no such user' });
       } else {
-        res.status(500).send('server error');
+        res.status(SERVER_ERROR).send([{ message: SERVER_ERROR_MESSAGE }]);
       }
     });
 };
 const createUsers = (req, res) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
-    .then((newUser) => res.status(201).send(newUser))
+    .then((newUser) => res.status(ADD).send(newUser))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'one ore more fields not correct' });
-      } else if (err.name === 'CastError') {
-        res.status(400).send({ message: err.message });
+        res.status(INVALID_DATA).send({ message: 'one ore more fields not correct' });
       } else {
-        res.status(500).send({ message: 'there is issue with server' });
+        res.status(SERVER_ERROR).send({ message: SERVER_ERROR_MESSAGE });
       }
     });
 };
@@ -48,15 +54,19 @@ const updateUser = (req, res) => {
     me,
     { name, about },
     { new: true, runValidators: true },
-  )
-    .then((upd) => res.status(201).send(upd))
+  ).orFail(() => {
+    const error = new Error({ message: 'user id not found' });
+    error.status = NOT_FOUND;
+    throw error;
+  })
+    .then((upd) => res.status(ADD).send(upd))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'one ore more fields not correct' });
+        res.status(INVALID_DATA).send({ message: 'all fields must be filled' });
       } else if (err.name === 'CastError') {
-        res.status(400).send({ message: err.message });
+        res.status(INVALID_DATA).send({ message: 'check all data' });
       } else {
-        res.status(500).send({ message: 'there is issue with server' });
+        res.status(SERVER_ERROR).send({ message: SERVER_ERROR_MESSAGE });
       }
     });
 };
@@ -64,12 +74,19 @@ const updateUserAvatar = (req, res) => {
   const { avatar } = req.body;
   const me = { _id: req.user._id };
   User.findByIdAndUpdate(me, { avatar }, { new: true, runValidators: true })
-    .then((upd) => res.status(201).send(upd))
+    .orFail(() => {
+      const error = new Error('user id not found');
+      error.status = NOT_FOUND;
+      throw error;
+    })
+    .then((upd) => res.status(ADD).send(upd))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'it must be a valid url' });
+        res.status(INVALID_DATA).send({ message: 'make sure you use legal url' });
+      } else if (err.name === 'CastError') {
+        res.status(INVALID_DATA).send({ message: 'make sure you fill the fields correct' });
       } else {
-        res.status(500).send({ message: 'there is issue with server' });
+        res.status(SERVER_ERROR).send({ message: SERVER_ERROR_MESSAGE });
       }
     });
 };
