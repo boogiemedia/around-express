@@ -32,19 +32,19 @@ const createNewCard = (req, res) => {
     });
 };
 const deleteCard = (req, res) => {
-  const { name, cardId } = req.params;
-  Card.deleteOne({ cardId })
+  const { cardId } = req.params;
+  Card.findByIdAndRemove(cardId)
     .orFail(() => {
-      const error = new Error({ message: 'such card not exist' });
+      const error = new Error('such card not exist');
       error.status = NOT_FOUND;
       throw error;
     })
-    .then(() => res.status(ADD).send({ message: `card ${name} was deleted ` }))
+    .then(() => res.status(ADD).send({ message: 'card  was deleted' }))
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(INVALID_DATA).send('Invalid ID was passed');
+        res.status(INVALID_DATA).send('Invalid format of ID');
       } else if (err.status === NOT_FOUND) {
-        res.status(NOT_FOUND).send({ message: 'card not exist' });
+        res.status(NOT_FOUND).send({ message: err.message });
       } else {
         res.status(SERVER_ERROR).send({ message: SERVER_ERROR_MESSAGE });
       }
@@ -57,7 +57,7 @@ const likeCard = (req, res) => {
     { new: true },
   )
     .orFail(() => {
-      const error = new Error({ message: 'user id not found' });
+      const error = new Error('user id not found');
       error.status = NOT_FOUND;
       throw error;
     })
@@ -66,11 +66,11 @@ const likeCard = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(INVALID_DATA).send({ message: 'Invalid ID was passed' });
+        res.status(INVALID_DATA).send({ message: 'Invalid format of ID' });
       } else if (err.status === NOT_FOUND) {
-        res.status(NOT_FOUND).send({ message: 'card not exist' });
+        res.status(NOT_FOUND).send({ message: err.message });
       } else {
-        res.status(SERVER_ERROR).send({ message: 'server error' });
+        res.status(SERVER_ERROR).send({ message: SERVER_ERROR_MESSAGE });
       }
     });
 };
@@ -79,17 +79,21 @@ const unlikeCard = (req, res) => {
     req.params.cardId,
     { $pull: { likes: req.user._id } },
     { new: true },
-  )
+  ).orFail(() => {
+    const error = new Error('User not exist');
+    error.status = NOT_FOUND;
+    throw error;
+  })
     .then(() => {
       res.status(OK).send({ message: 'card disliked' });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(INVALID_DATA).send({ message: 'Invalid ID was passed' });
+        res.status(INVALID_DATA).send({ message: 'wrong ID format' });
       } else if (err.status === NOT_FOUND) {
-        res.status(NOT_FOUND).send({ message: 'Invalid ID was passed' });
+        res.status(NOT_FOUND).send({ message: err.message });
       } else {
-        res.status(500).send('server error');
+        res.status(SERVER_ERROR).send({ message: SERVER_ERROR_MESSAGE });
       }
     });
 };

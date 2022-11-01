@@ -27,9 +27,11 @@ const getProfile = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(INVALID_DATA).send({ message: 'make sure that id format is correct' });
+        res
+          .status(INVALID_DATA)
+          .send({ message: 'make sure that id format is correct' });
       } else if (err.status === NOT_FOUND) {
-        res.status(NOT_FOUND).send({ message: 'there is no such user' });
+        res.status(NOT_FOUND).send({ message: err.message });
       } else {
         res.status(SERVER_ERROR).send([{ message: SERVER_ERROR_MESSAGE }]);
       }
@@ -41,7 +43,9 @@ const createUsers = (req, res) => {
     .then((newUser) => res.status(ADD).send(newUser))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(INVALID_DATA).send({ message: 'one ore more fields not correct' });
+        res
+          .status(INVALID_DATA)
+          .send({ message: 'one ore more fields not correct' });
       } else {
         res.status(SERVER_ERROR).send({ message: SERVER_ERROR_MESSAGE });
       }
@@ -54,17 +58,22 @@ const updateUser = (req, res) => {
     me,
     { name, about },
     { new: true, runValidators: true },
-  ).orFail(() => {
-    const error = new Error({ message: 'user id not found' });
-    error.status = NOT_FOUND;
-    throw error;
-  })
+  )
+    .orFail(() => {
+      const error = new Error('user id not found');
+      error.status = NOT_FOUND;
+      throw error;
+    })
     .then((upd) => res.status(ADD).send(upd))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(INVALID_DATA).send({ message: 'all fields must be filled' });
+        res
+          .status(INVALID_DATA)
+          .send({ message: 'one or more fields are incorrect' });
       } else if (err.name === 'CastError') {
-        res.status(INVALID_DATA).send({ message: 'check all data' });
+        res.status(INVALID_DATA).send({ message: 'you must fill all fields' });
+      } else if (err.status === NOT_FOUND) {
+        res.status(NOT_FOUND).send({ message: err.message });
       } else {
         res.status(SERVER_ERROR).send({ message: SERVER_ERROR_MESSAGE });
       }
@@ -82,9 +91,15 @@ const updateUserAvatar = (req, res) => {
     .then((upd) => res.status(ADD).send(upd))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(INVALID_DATA).send({ message: 'make sure you use legal url' });
+        res
+          .status(INVALID_DATA)
+          .send({ message: 'one or more fields are incorrect' });
       } else if (err.name === 'CastError') {
-        res.status(INVALID_DATA).send({ message: 'make sure you fill the fields correct' });
+        res
+          .status(INVALID_DATA)
+          .send({ message: 'Invalid ID was passed' });
+      } else if (err.status === NOT_FOUND) {
+        res.status(NOT_FOUND).send({ message: err.message });
       } else {
         res.status(SERVER_ERROR).send({ message: SERVER_ERROR_MESSAGE });
       }
